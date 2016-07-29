@@ -1,0 +1,19 @@
+{
+  "name": "fe",
+  "version": "1.0.0",
+  "description": "front-end cli tool set",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@116.236.249.238:9922/bin.zhuxbj/fe.git"
+  },
+  "keywords": [
+    "fe",
+    "wenba"
+  ],
+  "author": "bin.zhuxbj@wenba100.com",
+  "license": "SEE LICENSE IN LICENSE"
+}

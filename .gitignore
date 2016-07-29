@@ -1,0 +1,12 @@
+.vscode
+.DS_Store
+
+.idea
+.gradle
+local.properties
+*.iml
+
+node_modules/
+npm-debug.log
+
+logs
