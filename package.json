@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "front-end cli tool set",
   "main": "index.js",
+  "bin": {
+    "fe": "./bin/fe"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +18,18 @@
     "wenba"
   ],
   "author": "bin.zhuxbj@wenba100.com",
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "co": "^4.6.0",
+    "commander": "^2.9.0",
+    "git-url-parse": "^6.0.5",
+    "gulp-util": "^3.0.7",
+    "koa": "^2.0.0-alpha.4",
+    "mkdirp": "^0.5.1",
+    "request": "^2.74.0",
+    "semver": "^5.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.1.1"
+  }
 }
