@@ -4,6 +4,14 @@
 
 目标： 易用的
 
+# 安装
+
+```
+git clone ssh://git@116.236.249.238:9922/frontend/fe.git fe
+cd fe
+npm install -g .
+```
+
 # `v1.0.0` 功能
 
 ## deploy
