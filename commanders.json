@@ -1,0 +1,46 @@
+{
+    "deploy": {
+        "command": "deploy [name]",
+        "description": "run deploy commands for envs",
+        "alias": "d",
+        "options": [
+            ["-H, --host     [String]", "设置临时发布的机器IP", "split"],
+            ["-P, --path     [String]", "设置服务器端的发布目录"],
+            ["-R, --repo     [String]", "设置仓库地址，默认为package中repository.url"],
+            ["-b, --build    [Boolean]", "设置是否需要进行build，文件名md5等操作"],
+            ["-c, --config   [String]", "设置发布的配置文件，默认为 `fe.json`"],
+            ["-d, --dest     [String]", "设置发布的目录"],
+            ["-e, --env      [String]", "设置发布的环境 [`production`, `test`]，默认为 `test`"],
+            ["-n --name      [String]", "当type为npm时设置包名，例如：zepto@1.0.0"],
+            ["-p, --port     [Number]", "通过ssh链接服务器时的端口号，默认是 `9922`"],
+            ["-r, --ref      [String]", "设置发布的分支"],
+            ["-t --type      [String]", "设置类型，默认为 `git`，可选的有 [`npm`, `git`]"],
+            ["-u, --user     [String]", "设置远程链接的用户，默认为 `wenba`"]
+        ]
+    },
+    "server": {
+        "command": "server",
+        "description": "setup static server at current dir",
+        "alias": "s",
+        "options": [
+            ["-p, --port [port]", "设置端口号，默认为 `9001`"]
+        ]
+    },
+    "build": {
+        "command": "build",
+        "description": "build",
+        "alias": "b",
+        "options": [
+            ["-p, --port [port]", "设置端口号，默认为 `9001`"]
+        ]
+    },
+    "generator": {
+        "command": "generator [name]",
+        "description": "run generator commands for envs",
+        "alias": "g",
+        "options": [
+            ["-s, --setup_mode [mode]", "Which setup mode to use"],
+            ["-d, --setup_mode [mode]", "Which setup mode to use"]
+        ]
+    }
+}
