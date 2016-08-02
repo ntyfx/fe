@@ -12,7 +12,7 @@ cd fe
 npm install -g .
 ```
 
-# `v1.0.0` 功能
+# 功能
 
 ## deploy
 
@@ -116,3 +116,13 @@ module.exports = function(env, options) {
 ```
 ./bin/fe
 ```
+
+## TODO
+
+[] 打包功能，对普通 `package` 中文件的文件名加 md5，应对 CDN 缓存
+
+[] 回滚操作，将 `latest` 版本重定向到上次发布的版本
+
+[] 静态服务器，在当前工作目录启动一个静态服务器，并内置 `mock` 数据服务
+
+[] 模板脚手架，内置一些常用的模板，一键生成需要的项目架构

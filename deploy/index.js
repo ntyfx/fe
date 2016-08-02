@@ -39,11 +39,7 @@ class Deploy {
             promise = this.initGit();
         }
 
-
-
-        return promise
-
-            .then(() => this);
+        return promise.then(() => this);
     }
 
     initNpm() {
