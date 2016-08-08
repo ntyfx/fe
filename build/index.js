@@ -1,5 +1,8 @@
 'use strict';
 
+const Promise = require('bluebird');
+const debug = require('debug')('build-cli');
+
 class Build{
     constructor() {
     }

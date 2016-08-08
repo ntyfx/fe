@@ -1,0 +1,18 @@
+{
+    "defaultType": "hosted",
+    "repositories": {
+        "hosted": "<%= registry %>/<%= name %>/repository/archive.tar.gz?ref=<%= spec %>",
+        "npm": "<%= registry %>/<%= name %>/download/<%= name %>-<%= spec %>.tgz",
+        "github": "https://github.com/<%= name %>/archive/<%= spec %>.zip"
+    },
+    "alias": {
+        "envs": {
+            "development": "dev",
+            "test": "test",
+            "production": "prod"
+        },
+        "links": {
+            "major": "latest"
+        }
+    }
+}

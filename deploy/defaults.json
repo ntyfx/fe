@@ -1,0 +1,37 @@
+{
+    "registry": "https://registry.npm.taobao.org",
+    "hosted": {
+        "url": "https://116.236.249.238:2443"
+    },
+    "base": ".",
+    "type": "",
+    "package": "",
+    "disableLatest": "",
+    "disableMajor": "",
+    "disableMinor": "",
+    "hook": {
+        "post-deploy": "ls"
+    },
+    "envs": {
+        "dev": {
+            "hosts": ["localhost"],
+            "dist": "/data/data/nginx_80"
+        },
+        "test": {
+            "hosts": ["10.2.1.22"],
+            "user": "wenba",
+            "port": "9922",
+            "forward_agent": true,
+            "dist": "/data/data/nginx_80",
+            "ssh_options": []
+        },
+        "prod": {
+            "hosts": ["10.10.182.123"],
+            "user": "wenba",
+            "port": "9922",
+            "forward_agent": true,
+            "dist": "/data/data/nginx_80",
+            "ssh_options": []
+        }
+    }
+}

@@ -1,4 +1,8 @@
 'use strict';
+
+const Promise = require('bluebird');
+const debug = require('debug')('utils-spawn');
+
 const childProcess = require('child_process');
 const gutil = require('gulp-util');
 
@@ -12,15 +16,13 @@ module.exports = (command, data, args) => {
     }
 
     return new Promise((resolve, reject) => {
-        var shellSyntaxCommand = "echo '" + data + "' | \"" + command + "\" " + args.join(' ');
-        var proc = childProcess.spawn('sh', ['-c', shellSyntaxCommand], {
+        let shellSyntaxCommand = "echo '" + data + "' | \"" + command + "\" " + args.join(' ');
+        let proc = childProcess.spawn('sh', ['-c', shellSyntaxCommand], {
             stdio: 'inherit'
         });
 
-        proc.on('error', e => reject(new gutil.PluginError('util.spawn', e, {
-            showStack: true
-        })));
+        proc.on('error', reject);
 
-        proc.on('close', code => resolve(code, args));
+        proc.on('close', resolve);
     });
 };

@@ -1,0 +1,16 @@
+{
+    "hook": {
+        "post-deploy": "ls"
+    },
+    "envs": {
+        "dev": {
+            "dist": "/data/data/node"
+        },
+        "test": {
+            "dist": "/data/data/nginx_80"
+        },
+        "prod": {
+            "dist": "/data/data/nginx_80"
+        }
+    }
+}
