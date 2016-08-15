@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Deploy Launch",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/bin/fe",
+            "stopOnEntry": false,
+            "args": ["deploy", "-p", "frontend/WiTex@maadster"],
+            "cwd": "/Users/nty/Work/bin.zhuxbj/activity-node-app",
+            "preLaunchTask": null,
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "externalConsole": false,
+            "sourceMaps": false,
+            "outDir": null
+        }
+    ]
+}

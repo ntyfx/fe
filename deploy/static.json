@@ -1,0 +1,16 @@
+{
+    "envs": {
+        "dev": {
+            "hosts": ["localhost"],
+            "dist": "/data/data/nginx_80"
+        },
+        "test": {
+            "hosts": ["10.2.1.22", "10.2.1.104"],
+            "dist": "/data/data/nginx_80"
+        },
+        "prod": {
+            "hosts": ["10.10.182.123", "10.10.245.62", "10.10.246.19"],
+            "dist": "/data/data/nginx_80"
+        }
+    }
+}

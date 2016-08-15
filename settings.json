@@ -5,6 +5,10 @@
         "npm": "<%= registry %>/<%= name %>/download/<%= name %>-<%= spec %>.tgz",
         "github": "https://github.com/<%= name %>/archive/<%= spec %>.zip"
     },
+    "saferepos": ["hosted"],
+    "deploy": {
+        "meta": "__deploy"
+    },
     "alias": {
         "envs": {
             "development": "dev",

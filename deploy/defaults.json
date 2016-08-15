@@ -9,28 +9,27 @@
     "disableLatest": "",
     "disableMajor": "",
     "disableMinor": "",
-    "hook": {
-        "post-deploy": "ls"
-    },
+    "max": 0,
+    "hook": {},
     "envs": {
         "dev": {
             "hosts": ["localhost"],
-            "dist": "/data/data/nginx_80"
+            "dist": ""
         },
         "test": {
-            "hosts": ["10.2.1.22"],
+            "hosts": [],
             "user": "wenba",
             "port": "9922",
             "forward_agent": true,
-            "dist": "/data/data/nginx_80",
+            "dist": "",
             "ssh_options": []
         },
         "prod": {
-            "hosts": ["10.10.182.123"],
+            "hosts": [],
             "user": "wenba",
             "port": "9922",
             "forward_agent": true,
-            "dist": "/data/data/nginx_80",
+            "dist": "",
             "ssh_options": []
         }
     }

@@ -1,16 +1,21 @@
 {
     "hook": {
-        "post-deploy": "ls"
+        "post-deploy": "npm install && pm2 startOrRestart ecosystem.json --env <%= env %>"
     },
+    "disableMajor": "true",
+    "disableMinor": "true",
+    "max": 5,
     "envs": {
         "dev": {
             "dist": "/data/data/node"
         },
         "test": {
-            "dist": "/data/data/nginx_80"
+            "hosts": ["10.2.1.22", "10.2.1.104"],
+            "dist": "/home/wenba/nodeProject"
         },
         "prod": {
-            "dist": "/data/data/nginx_80"
+            "hosts": ["10.10.245.62", "10.10.246.19"],
+            "dist": "/home/wenba/projects"
         }
     }
 }

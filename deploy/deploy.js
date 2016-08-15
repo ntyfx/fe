@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 const os = require('os');
 const zlib = require('zlib');
 const crypto = require("crypto");
@@ -12,10 +13,10 @@ const co = require('co');
 const npa = require("npm-package-arg");
 const semver = require('semver');
 const _ = require('lodash');
-const request = require('request');
 const chalk = require('chalk');
-const ProgressBar = require('progress');
+const mkdirp = require('mkdirp');
 const vfs = require('vinyl-fs');
+const through2 = require('through2');
 
 const tar = require('tar');
 const urllib = require('urllib');
@@ -36,14 +37,13 @@ class Deploy extends SeriesTaskCommand {
     constructor() {
         super();
 
-        this.tasks = ['download', 'check', 'upload', 'createLinks', 'clean'];
+        this.tasks = ['download', 'initConfig', 'fetchMeta', 'preDeploy', 'upload', 'limitVersions', 'uploadMeta', 'uploadVersion', 'createLinks', 'postDeploy', 'clean'];
+        this.deployDate = new Date();
+        this.tmpRoot = this.tmpdir = os.tmpdir();
     }
 
     init(env, config) {
-        this.emit('pre-init');
-
         this.envName = env || 'dev';
-        this.env = config.envs[this.envName];
         this.config = config;
 
         debug('this.config: %o', this.config);
@@ -54,19 +54,6 @@ class Deploy extends SeriesTaskCommand {
         this.repository = this.parsePackage();
 
         debug('this.repository: %o', this.repository);
-
-        this.remote = {
-            root: path.join(this.env.dist, (this.type !== settings.defaultType ? 'public' : ''), this.repository.name)
-        };
-        this.remote.dist = path.join(this.remote.root, this.repository.version);
-
-        debug('this.remote: %o', this.remote);
-
-        this.tmpdir = os.tmpdir();
-
-        this.emit('post-init');
-
-        this.pool = Pool.getInstance().init(this.env.hosts, this.env);
 
         return this;
     }
@@ -141,16 +128,19 @@ class Deploy extends SeriesTaskCommand {
 
     initTmpDir(filename) {
         if (!filename) {
-            let tmp = crypto.createHash("md5").update(String(new Date())).digest('hex');
+            let tmp = crypto.createHash("md5").update(String(this.deployDate)).digest('hex');
             this.filename = this.config.package.replace(/[\/@]/g, '-') + '-' + tmp;
         } else {
             this.filename = filename.replace(/\.zip|\.tgz|\.tar\.gz|\.tar$/g, '');
         }
 
-        this.tmpdir = path.join(this.tmpdir, this.filename);
+        this.tmpdir = path.join(this.tmpdir, this.filename, 'src');
+        this.tmpMeta = path.join(this.tmpRoot, this.filename, '.metadata');
+        this.tmpVersions = path.join(this.tmpRoot, this.filename, '.versions');
 
         debug('this.filename: %o', this.filename);
         debug('this.tmpdir: %o', this.tmpdir);
+        debug('this.tmpMeta: %o', this.tmpMeta);
     }
 
     download(next) {
@@ -169,9 +159,9 @@ class Deploy extends SeriesTaskCommand {
             streaming: true
         };
 
-        gutil.log(`start download ${chalk.green(repository.url)}`);
+        gutil.log(`下载文件 ${chalk.green(repository.url)}`);
 
-        urllib.request(repository.url, options).then(req => {
+        return urllib.request(repository.url, options).then(req => {
             if (req.status !== 200) {
                 throw new Error(`文件下载失败，请检查 package 信息是否正确：${this.config.package}`);
             }
@@ -192,7 +182,11 @@ class Deploy extends SeriesTaskCommand {
                     strip: 1
                 });
 
-                req.res.on('error', err => reject(new Error(`文件下载失败，${repository.url}`)));
+                req.res.on('data', () => {
+                    process.stdout.write('.');
+                }).on('end', () => {
+                    process.stdout.write('\n');
+                }).on('error', err => reject(new Error(`文件下载失败，${repository.url}`)));
 
                 gunzip.on('error', err => reject(new Error('文件gzip解压失败')));
                 extracter.on('error', err => reject(new Error('文件tar解压失败'))).on('end', resolve);
@@ -201,43 +195,303 @@ class Deploy extends SeriesTaskCommand {
             });
         }).then(() => {
             gutil.log(`文件解压到 ${chalk.green(this.tmpdir)}`);
-        }).then(next).catch(utils.error);
+        }).catch(utils.error);
     }
 
-    check(next) {
+    parseProjectConfig(config) {
+        let projectDefault = {};
+
+        switch (config.projectType) {
+            case 'node':
+                projectDefault = require('./node');
+                break;
+            default:
+                projectDefault = require('./static');
+                break;
+        }
+
+        this.config = _.defaultsDeep(config.deploy, projectDefault, this.config);
+
+        debug('this.config with %o project config: %o', config.projectType, this.config);
+    }
+
+    initConfig(next) {
         let src = path.join(this.tmpdir, this.config.base.replace(/\.+/g, '.'));
 
-        new Promise((resolve, reject) => {
-            if (this.env.dist.replace(/\/+/g, '/').split('/').length < 3) {
-                return reject(new Error(`目标路径 ${this.env.dist} 不符合要求`));
+        let projectConfig = {};
+
+        if (~settings.saferepos.indexOf(this.config.type)) {
+            try {
+                projectConfig = require(path.resolve(src, 'fe'));
+            } catch (err) {}
+        }
+
+        this.parseProjectConfig(projectConfig);
+
+        this.uploadDir = src;
+
+        debug('this.uploadDir: %o', this.uploadDir);
+
+        this.env = this.config.envs[this.envName];
+
+        debug('this.env: %o', this.env);
+
+        this.remote = {
+            root: path.join(this.env.dist, (this.type !== settings.defaultType ? 'public' : ''), this.repository.name)
+        };
+        this.remote.dist = path.join(this.remote.root, this.repository.version);
+        this.remote.meta = path.join(this.remote.root, '.metadata');
+        this.remote.versions = path.join(this.remote.root, '.versions');
+
+
+        this.hook = this.config.hook;
+        this.pool = Pool.getInstance().init(this.env.hosts, this.env);
+        debug('this.remote: %o', this.remote);
+
+        if (this.env.dist.replace(/\/+/g, '/').split('/').length < 3) {
+            throw new Error(`目标路径 ${this.env.dist} 不符合要求`);
+        }
+
+        next();
+    }
+
+    get symlinks() {
+        let symlinks = [];
+
+        if (!this.config.disableLatest) {
+            symlinks.push('major');
+        }
+
+        if (!this.config.disableMajor) {
+            symlinks.push('minor');
+        }
+
+        if (!this.config.disableMinor) {
+            symlinks.push('patch');
+        }
+
+        return symlinks;
+    }
+
+    fetchMeta(next) {
+        let meta = this.remote.meta;
+
+        this.metadata = {
+            versions: [],
+            list: {}
+        };
+
+        // 判断文件是否存在
+        let cmd = ['test', '-e', meta, '||', 'echo $?'].join(' ');
+        return this.pool.remote(cmd).then(results => {
+            let exist = results.every(r => {
+                return !r.trim();
+            });
+
+            if (!exist) {
+                return false;
             }
 
-            this.uploadDir = src;
+            debug('download metadata to %o', this.tmpMeta);
 
-            resolve();
-        }).then(next).catch(utils.error);
+            return this.pool.download(meta, this.tmpMeta);
+        }).then(() => {
+
+            return new Promise((resolve, reject) => {
+                let meta = path.join(this.tmpMeta, settings.deploy.meta);
+
+                debug('read local metadata: %o', meta);
+
+                if (fs.existsSync(meta)) {
+                    fs.readFile(meta, (err, data) => {
+                        if (err) return resolve(err);
+                        this.metadata = JSON.parse(data);
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            });
+        }).catch(utils.error);
+    }
+
+    preDeploy(next) {
+        let preDeployCmd = this.hook['pre-deploy'];
+
+        return new Promise((resolve, reject) => {
+            if (preDeployCmd) {
+                this.pool.remote(preDeployCmd.replace(/sudo/g, '')).then(resolve).catch(reject);
+            } else {
+                resolve();
+            }
+        }).then(() => {
+            debug('inited this.metadata: %o', this.metadata);
+        }).catch(utils.error);
     }
 
     upload(next) {
-        this.pool.upload(this.uploadDir, this.remote.dist).then(() => {}).then(next).catch(utils.error);
+        return this.pool.upload(this.uploadDir, this.remote.dist).then(() => {
+            // DO SOMETHING
+        }).catch(utils.error);
+    }
+
+    limitVersions(next) {
+        let metadata = this.metadata;
+        let max = parseInt(this.config.max, 10);
+        let shift = (versions) => {
+            let version = versions.shift();
+            if (version == versions[0]) {
+                return shift(versions);
+            } else {
+                return version;
+            }
+        };
+
+        if (!max || max < 3 || metadata.versions.length < max) {
+            return next();
+        }
+
+        let version = shift(metadata.versions);
+
+        delete metadata.list[version];
+
+        let target = path.join(path.dirname(this.remote.dist), version);
+        let cmd = `rm -rf ${target} || echo $?`;
+        gutil.log(`删除最旧的备份： ${target}`);
+        return this.pool.remote(cmd).catch(utils.error);
+    }
+
+    uploadMeta(next) {
+        let time = this.deployDate.toString();
+        let metadata = this.metadata;
+
+        let meta = path.join(this.tmpMeta, settings.deploy.meta);
+        let versions = metadata.versions || [];
+        let list = metadata.list || {};
+        let version = list[this.repository.version] || {};
+
+        // 更新某版本的最后发布时间
+        if (version.time) {
+            if (Array.isArray(version.time)) {
+                version.time.push(time);
+            } else {
+                version.time = [version.time].concat(time);
+            }
+        } else {
+            version.time = time;
+        }
+
+        this.symlinks.forEach(s => {
+            metadata[this.repository.links[s]] = this.repository.version;
+        });
+
+        if (versions.indexOf(this.repository.version) > -1) {
+            versions.splice(versions.indexOf(this.repository.version), 1);
+        }
+
+        versions.push(this.repository.version);
+        list[this.repository.version] = version;
+        metadata.list = list;
+        metadata.versions = versions;
+
+        gutil.log(`上传元数据： ${meta}`);
+
+        return new Promise((resolve, reject) => {
+            mkdirp(path.dirname(meta), err => {
+                if (err) {
+                    return reject(err);
+                }
+
+                debug('updated metadata: %o', metadata);
+
+                fs.writeFile(meta, JSON.stringify(metadata), err => {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve();
+                });
+            });
+        }).then(() => this.pool.upload(this.tmpMeta, this.remote.meta)).catch(utils.error);
+    }
+
+    uploadVersion(next) {
+        let data = {
+            files: []
+        };
+
+        gutil.log(`检索 package 中所有的文件 ...`);
+
+        return new Promise((resolve, reject) => {
+            vfs.src('**/*', {
+                read: false,
+                cwd: this.uploadDir,
+                cwdbase: true
+            }).pipe(through2.obj(function(file, enc, cb) {
+                this.resume();
+                data.files.push(file.relative);
+                cb(null, data);
+            })).on('end', resolve.bind(null, data)).on('error', reject);
+        }).then(data => {
+            gutil.log(`上传描述文件: ${this.tmpVersions}`);
+
+            return new Promise((resolve, reject) => {
+                let filePath = path.join(this.tmpVersions, `${this.repository.version}.json`);
+
+                debug('local version files: %o', filePath);
+
+                mkdirp(this.tmpVersions, err => {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    debug('write local version files: %o', data);
+
+                    fs.writeFile(filePath, JSON.stringify(data), err => {
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        return resolve();
+                    });
+                });
+            });
+        }).then(() => this.pool.upload(this.tmpVersions, this.remote.versions));
     }
 
     createLinks(next) {
         let cmd = [];
 
-        Object.keys(this.repository.links).forEach(l => {
-            let link = path.join(path.dirname(this.remote.dist), this.repository.links[l]);
-
-            gutil.log(`ln -sfn ${this.remote.dist} ${link}`);
+        this.symlinks.forEach(s => {
+            let link = path.join(this.remote.root, this.repository.links[s]);
             cmd.push(`ln -sfn ${this.remote.dist} ${link}`);
         });
 
-        this.pool.remote(cmd.join(' && ')).then(() => {}).then(next).catch(utils.error);
+        return this.pool.remote(cmd.join(' && ')).catch(utils.error);
+    }
+
+    postDeploy(next) {
+        let postDeployCmd = this.hook['post-deploy'];
+
+        if (postDeployCmd) {
+            postDeployCmd = _.template(postDeployCmd)({
+                env: this.envName == settings.alias.envs.production ? 'production' : 'development'
+            });
+
+            postDeployCmd = [`cd ${this.remote.dist}`, postDeployCmd].join(' && ');
+
+            return this.pool.remote(postDeployCmd.replace(/sudo/g, '')).catch(utils.error);
+        } else {
+            next();
+        }
     }
 
     clean(next) {
-
-        next();
+        let tmp = path.dirname(this.tmpdir);
+        let cmd = `rm -rf ${tmp} || echo $?`;
+        return utils.shell(cmd).then(() => {
+            gutil.log('删除临时目录: ' + tmp);
+        }).catch(utils.error);
     }
 
 }

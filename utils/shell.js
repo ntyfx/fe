@@ -9,8 +9,13 @@ const gutil = require('gulp-util');
 module.exports = (command, options) => {
     return new Promise((resolve, reject) => {
         childProcess.exec(command, (error, stdout, stderr) => {
-            if (error || stderr) {
-                return reject(new Error(`执行命令失败： ${command}\n${stderr}`));
+            if (error) {
+                return reject(error);
+            }
+
+            if (stderr) {
+                gutil.log(`执行命令失败： ${command}`);
+                gutil.log(`${stderr}`);
             }
 
             resolve(stdout);

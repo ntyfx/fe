@@ -23,38 +23,38 @@ npm install -g .
 发布一个已开发好的 `package`
 
 ```
-cd $package_root // 进入到本地开发的 package 根目录，即 package.json所在的目录
-fe deploy production --ref v1.0.0
-// ref 为需要发布的版本，v1.0.0 为此次发布打的tag，并且必须push到服务器端
-// production 为需要发布的环境，默认为test
+fe d test -p frontend/appsh5@1.7.0
 ```
 
-也可以发布一个 `npm` 仓库中的公共的 `package`，其中 `-n` 参数的值的格式是必须的，为 `name@version`
+其中：
+
+1. `fe`: 命令名
+2. `d`: 子命令 `deploy` 的别名，你也可以直接用 `deploy`
+3. `test`: 待发布的环境，默认为 `dev`，可选的有 `dev`、`test`、`prod`
+4. `-p`: 参数 `--package` 的简写，用来指定package ID
+5. `frontend/appsh5@1.7.0`: `package` 的 `ID`，格式为 group/name@[tag|branch]，其中tag必须符合 `semver` 规范， `branch` 只在非生产环境有效
+
+也可以发布一个 `npm` 仓库中的公共的 `package`，这里 package ID 的格式为 name@version
 
 ```
-fe d production -t npm -n zepto@v1.1.7
+fe d test -t npm -p zepto@v1.1.7
 ```
 
 ### 使用
 
 ```
-  Usage: deploy|d [options] [name]
+  Usage: deploy|d [options] [env]
 
   Options:
 
     -h, --help                output usage information
-    -H, --host     [String]   设置临时发布的机器IP
-    -P, --path     [String]   设置服务器端的发布目录
-    -R, --repo     [String]   设置仓库地址，默认为package中repository.url
-    -b, --build    [Boolean]  设置是否需要进行build，文件名md5等操作
-    -c, --config   [String]   设置发布的配置文件，默认为 `fe.json`
-    -d, --dest     [String]   设置发布的目录
-    -e, --env      [String]   设置发布的环境 [`production`, `test`]，默认为 `test`
-    -n --name      [String]   当type为npm时设置包名，例如：zepto@1.0.0
-    -p, --port     [Number]   通过ssh链接服务器时的端口号，默认是 `9922`
-    -r, --ref      [String]   设置发布的分支
-    -t --type      [String]   设置类型，默认为 `git`，可选的有 [`npm`, `git`]
-    -u, --user     [String]   设置远程链接的用户，默认为 `wenba`
+    -t, --type     [String]   设置类型，默认为 `git`，可选的有 [`npm`, `git`]
+    -p, --package  [String]   设置包名，例如：zepto@1.0.0
+    -b --base      [String]   设置发布的根目录，例如：./dest，默认为 `.`
+    -f --force     [Boolean]  强制发布
+    --disableLatest           不重新指定 `latest` 版本
+    --disableMajor            不重新指定 `major` 版本
+    --disableMinor            不重新指定 `minor` 版本
 ```
 
 ### 开发
@@ -74,6 +74,7 @@ cd fe && npm install
 
 ```
     "test": {
+        "action": require('./test'),
         "command": "test [name]",
         "description": "run test commands",
         "alias": "g",
@@ -96,25 +97,17 @@ touch index.js
 ```
 'use strict';
 
-class Test{
-    constructor() {
-    }
-
-    init(options) {
-        console.log('init Test');
-    }
-}
-
-module.exports = function(env, options) {
-    var test = new Test();
-    test.init(options);
+module.exports = function(config, env, command) {
+    console.log('just a test');
 };
 ```
 
 5. run
 
 ```
-./bin/fe
+./bin/fe test
+
+// >> just a test
 ```
 
 ## TODO

@@ -9,11 +9,20 @@ module.exports = {
         "options": [
             ["-t, --type     [String]", "设置类型，默认为 `git`，可选的有 [`npm`, `git`]"],
             ["-p, --package  [String]", "设置包名，例如：zepto@1.0.0"],
-            ["-b --base      [String]", "设置发布的根目录，例如：./dest，默认为 `.` "],
-            ["-f --force     [Boolean]", "强制发布"],
+            ["-b, --base     [String]", "设置发布的根目录，例如：./dest，默认为 `.` "],
+            ["-f, --force    [Boolean]", "强制发布"],
             ["--disableLatest", "不重新指定 `latest` 版本"],
             ["--disableMajor", "不重新指定 `major` 版本"],
             ["--disableMinor", "不重新指定 `minor` 版本"]
+        ]
+    },
+    "rollback": {
+        "action": require('./rollback'),
+        "command": "rollback",
+        "description": "rollback package to specific version",
+        "alias": "r",
+        "options": [
+            ["-p, --package  [String]", "设置包名，例如：zepto@1.0.0"]
         ]
     },
     "config": {

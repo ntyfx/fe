@@ -21,7 +21,6 @@ Object.keys(commanders).forEach(key => {
     let commander = commanders[key];
     let subProgram = program.command(commander.command);
 
-
     if (commander.options && commander.options.length) {
         commander.options.forEach(option => subProgram.option(option[0], option[1], optionParser[option[2]]));
     }
