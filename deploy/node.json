@@ -10,7 +10,7 @@
             "dist": "/data/data/node"
         },
         "test": {
-            "hosts": ["10.2.1.22", "10.2.1.104"],
+            "hosts": ["10.2.1.22"],
             "dist": "/home/wenba/nodeProject"
         },
         "prod": {

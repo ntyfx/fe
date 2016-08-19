@@ -5,7 +5,7 @@
             "dist": "/data/data/nginx_80"
         },
         "test": {
-            "hosts": ["10.2.1.22", "10.2.1.104"],
+            "hosts": ["10.2.1.22"],
             "dist": "/data/data/nginx_80"
         },
         "prod": {
