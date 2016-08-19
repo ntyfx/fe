@@ -220,7 +220,7 @@ class Deploy extends SeriesTaskCommand {
 
         let projectConfig = {};
 
-        if (~settings.saferepos.indexOf(this.config.type)) {
+        if (~settings.saferepos.indexOf(this.type)) {
             try {
                 projectConfig = require(path.resolve(src, 'fe'));
             } catch (err) {}
