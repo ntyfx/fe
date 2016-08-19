@@ -37,7 +37,6 @@ class Deploy extends SeriesTaskCommand {
     constructor() {
         super();
 
-        this.tasks = ['download', 'initConfig', 'fetchMeta', 'preDeploy', 'upload', 'limitVersions', 'uploadMeta', 'uploadVersion', 'createLinks', 'postDeploy', 'clean'];
         this.deployDate = new Date();
         this.tmpRoot = this.tmpdir = os.tmpdir();
     }
@@ -45,6 +44,12 @@ class Deploy extends SeriesTaskCommand {
     init(env, config) {
         this.envName = env || 'dev';
         this.config = config;
+
+        if (this.envName == settings.alias.envs.test) {
+            this.tasks = ['download', 'initConfig', 'preDeploy', 'upload', 'limitVersions', 'createLinks', 'postDeploy', 'clean'];
+        } else {
+            this.tasks = ['download', 'initConfig', 'fetchMeta', 'preDeploy', 'upload', 'limitVersions', 'uploadMeta', 'uploadVersion', 'createLinks', 'postDeploy', 'clean'];
+        }
 
         debug('this.config: %o', this.config);
 
