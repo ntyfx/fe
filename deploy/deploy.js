@@ -467,6 +467,11 @@ class Deploy extends SeriesTaskCommand {
             cmd.push(`ln -sfn ${this.remote.dist} ${link}`);
         });
 
+        if (this.config.alias) {
+            let alias = path.join(this.env.dist, this.config.alias);
+            cmd.push(`ln -sfn ${this.remote.dist} ${alias}`);
+        }
+
         return this.pool.remote(cmd.join(' && ')).catch(utils.error);
     }
 
