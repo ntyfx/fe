@@ -9,10 +9,10 @@
 # 安装
 
 ```
-git clone ssh://git@116.236.249.238:9922/frontend/fe.git fe
-cd fe
-npm install -g .
+cnpm install @xueba/fe
 ```
+
+注：cnpm 需设置公司内网npm仓库地址 `cnpm set registry http://10.2.1.104:7001/`
 
 # 功能
 
