@@ -12,7 +12,7 @@ const {
     optionParser
 } = require('./utils');
 const {Config} = require('./config');
-const config = Config.parse(pkg.name);
+const config = Config.parse('fe');
 
 program.version(pkg.version);
 
