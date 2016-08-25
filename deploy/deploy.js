@@ -352,7 +352,7 @@ class Deploy extends SeriesTaskCommand {
             }
         };
 
-        if (!max || max < 3 || metadata.versions.length < max) {
+        if (!max || max < 3 || !metadata.versions || metadata.versions.length < max) {
             return next();
         }
 
