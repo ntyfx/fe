@@ -221,17 +221,17 @@ class Deploy extends SeriesTaskCommand {
     }
 
     initConfig(next) {
-        let src = path.join(this.tmpdir, this.config.base.replace(/\.+/g, '.'));
-
         let projectConfig = {};
 
         if (~settings.saferepos.indexOf(this.type)) {
             try {
-                projectConfig = require(path.resolve(src, 'fe'));
+                projectConfig = require(path.resolve(this.tmpdir, 'fe'));
             } catch (err) {}
         }
 
         this.parseProjectConfig(projectConfig);
+
+        let src = path.join(this.tmpdir, this.config.base.replace(/\.+/g, '.'));
 
         this.uploadDir = src;
 
