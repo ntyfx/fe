@@ -248,7 +248,6 @@ class Deploy extends SeriesTaskCommand {
         this.remote.meta = path.join(this.remote.root, '.metadata');
         this.remote.versions = path.join(this.remote.root, '.versions');
 
-
         this.hook = this.config.hook;
         this.pool = Pool.getInstance().init(this.env.hosts, this.env);
         debug('this.remote: %o', this.remote);
@@ -482,13 +481,23 @@ class Deploy extends SeriesTaskCommand {
 
     postDeploy(next) {
         let postDeployCmd = this.hook['post-deploy'];
+        let cwd = '';
 
         if (postDeployCmd) {
             postDeployCmd = _.template(postDeployCmd)({
                 env: this.envName == settings.alias.envs.production ? 'production' : 'development'
             });
 
-            postDeployCmd = [`cd ${this.remote.dist}`, postDeployCmd].join(' && ');
+            // nodejs 应用不创建minor和patch软链，启动应用需要进入到 latest 目录
+            if (this.symlinks.length === 1) {
+                cwd = `cd ${path.join(this.remote.root, this.repository.links[this.symlinks[0]])}`;
+            } else {
+                cwd = `cd ${this.remote.dist}`;
+            }
+
+            postDeployCmd = [cwd, postDeployCmd].join(' && ');
+
+            debug('post-deploy, %o', postDeployCmd);
 
             return this.pool.remote(postDeployCmd.replace(/sudo/g, '')).catch(utils.error);
         } else {
