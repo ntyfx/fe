@@ -13,7 +13,8 @@ module.exports = {
             ["-f, --force    [Boolean]", "强制发布"],
             ["--disableLatest", "不重新指定 `latest` 版本"],
             ["--disableMajor", "不重新指定 `major` 版本"],
-            ["--disableMinor", "不重新指定 `minor` 版本"]
+            ["--disableMinor", "不重新指定 `minor` 版本"],
+            ["--token", "gitlab token"]
         ]
     },
     "rollback": {

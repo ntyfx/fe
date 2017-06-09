@@ -46,7 +46,7 @@ class Deploy extends SeriesTaskCommand {
         this.config = config;
 
         if (this.envName == settings.alias.envs.test) {
-            this.tasks = ['download', 'initConfig', 'preDeploy', 'upload', 'limitVersions', 'createLinks', 'postDeploy', 'clean'];
+            this.tasks = ['download', 'initConfig', 'fetchMeta', 'preDeploy', 'upload', 'limitVersions', 'createLinks', 'postDeploy', 'clean'];
         } else {
             this.tasks = ['download', 'initConfig', 'fetchMeta', 'preDeploy', 'upload', 'limitVersions', 'uploadMeta', 'uploadVersion', 'createLinks', 'postDeploy', 'clean'];
         }
@@ -55,6 +55,10 @@ class Deploy extends SeriesTaskCommand {
 
         this.type = config.type || settings.defaultType;
         this.typeOpts = this.config[this.type] || {};
+
+        if(this.type === settings.defaultType && this.config.token) {
+            this.typeOpts.headers['PRIVATE-TOKEN'] = this.config.token;
+        }
 
         this.repository = this.parsePackage();
 
@@ -150,10 +154,6 @@ class Deploy extends SeriesTaskCommand {
 
     download(next) {
         let repository = this.repository;
-        const extracter = tar.Extract({
-            path: '',
-            strip: 1
-        });
 
         let options = {
             timeout: 5 * 60 * 1000,
