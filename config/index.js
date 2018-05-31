@@ -10,15 +10,22 @@ const gutil = require('gulp-util');
 const _ = require('lodash');
 const home = process.platform === "win32" ? process.env.USERPROFILE : process.env.HOME;
 const pwd = process.env.PWD;
+let defaults = {};
 
 class Config {
-    constructor() {}
+    constructor() { }
 
     static parse(app) {
         let user = Config.parseUser(app);
         let project = Config.parseProject(app);
 
-        return _.defaultsDeep(project, user, {});
+        try {
+            defaults = JSON.parse(fs.readFileSync(path.resolve(__dirname, `defaults.json`), 'utf-8'));
+        } catch (err) {
+            console.log(err);
+        }
+
+        return _.defaultsDeep(project, user, defaults, {});
     }
 
     static parseUser(app) {
@@ -26,7 +33,7 @@ class Config {
 
         try {
             config = ini.parse(fs.readFileSync(path.resolve(home, `.${app}rc`), 'utf-8'));
-        } catch (err) {}
+        } catch (err) { }
 
         return config;
     }
@@ -35,8 +42,12 @@ class Config {
         let config = {};
 
         try {
-            config = JSON.parse(fs.readFileSync(path.resolve(pwd, `.${app}.json`), 'utf-8'));
-        } catch (err) {}
+            // config = JSON.parse(fs.readFileSync(path.resolve(pwd, `.${app}.json`), 'utf-8'));
+            config = require(path.resolve(pwd, `.fe.js`));
+            config.package = Config.loadLocalPackage(pwd);
+        } catch (err) {
+            console.log(err);
+        }
 
         return config;
     }
@@ -47,8 +58,6 @@ class Config {
 
         _root = _root || pwd;
         p = path.resolve(_root, 'package.json');
-
-        gutil.log(`解析 ${p}`);
 
         try {
             pkg = JSON.parse(fs.readFileSync(p, 'utf-8'));
@@ -62,7 +71,7 @@ class Config {
 
 module.exports = (sub, options) => {
     let config = new Config;
-    
+
     sub = sub || 'list';
 
     config[sub] && config[sub]();

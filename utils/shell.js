@@ -14,7 +14,6 @@ module.exports = (command, options) => {
             }
 
             if (stderr) {
-                gutil.log(`执行命令失败： ${command}`);
                 gutil.log(`${stderr}`);
             }
 
