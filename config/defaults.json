@@ -1,0 +1,55 @@
+{
+    "registry": "https://registry.npm.taobao.org",
+    "hosted": {
+        "url": "https://registry.npm.taobao.org"
+    },
+    "base": ".",
+    "max": 0,
+    "hook": {},
+    "latest": "latest",
+    "tar": {
+        "dist": "dist",
+        "excludes": ["*.map"]
+    },
+    "build": {
+        "dev": {
+            "command": "npm run deploy:test"
+        },
+        "test": {
+            "command": "npm run deploy:test"
+        },
+        "prod": {
+            "command": "npm run deploy:prod"
+        }
+    },
+    "deploy": {
+        "dev": {
+            "host": [
+                "localhost"
+            ],
+            "dist": "/tmp/niu_niu_frontend"
+        },
+        "test": {
+            "user": "lankr",
+            "port": "22",
+            "forward_agent": true,
+            "dist": "/srv/niu_niu_frontend",
+            "ssh_options": [],
+            "host": [
+                "121.40.204.159"
+            ]
+        },
+        "prod": {
+            "user": "lankr",
+            "port": "22",
+            "forward_agent": true,
+            "dist": "/srv/niu_niu_frontend",
+            "ssh_options": [],
+            "host": [
+                "101.37.29.79",
+                "101.37.253.227",
+                "101.37.169.138"
+            ]
+        }
+    }
+}

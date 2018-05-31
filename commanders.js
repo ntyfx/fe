@@ -1,8 +1,9 @@
 'use strict';
+const action = require('./utils/action');
 
 module.exports = {
     "deploy": {
-        "action": require('./deploy'),
+        "action": action(require('./deploy')),
         "command": "deploy [env]",
         "description": "run deploy commands for envs",
         "alias": "d",
@@ -18,7 +19,7 @@ module.exports = {
         ]
     },
     "rollback": {
-        "action": require('./rollback'),
+        "action": action(require('./rollback')),
         "command": "rollback",
         "description": "rollback package to specific version",
         "alias": "r",
@@ -27,7 +28,7 @@ module.exports = {
         ]
     },
     "config": {
-        "action": require('./config'),
+        "action": action(require('./config')),
         "command": "config [sub]",
         "description": "setup static server at current dir",
         "alias": "c",
@@ -36,7 +37,7 @@ module.exports = {
         ]
     },
     "server": {
-        "action": require('./server'),
+        "action": action(require('./server')),
         "command": "server",
         "description": "setup static server at current dir",
         "alias": "s",
@@ -45,7 +46,7 @@ module.exports = {
         ]
     },
     "build": {
-        "action": require('./build'),
+        "action": action(require('./build')),
         "command": "build",
         "description": "build",
         "alias": "b",
@@ -54,7 +55,7 @@ module.exports = {
         ]
     },
     "generator": {
-        "action": require('./generator'),
+        "action": action(require('./generator')),
         "command": "generator [name]",
         "description": "run generator commands for envs",
         "alias": "g",
@@ -62,5 +63,19 @@ module.exports = {
             ["-s, --setup_mode [mode]", "Which setup mode to use"],
             ["-d, --setup_mode [mode]", "Which setup mode to use"]
         ]
-    }
+    },
+    "latest": {
+        "action": action(require('./latest')),
+        "command": "latest [env]",
+        "description": "获取当前服务器最新版本",
+        "alias": "ls",
+        "options": [
+            ["-a, --all     [Boolean]", "列出所有版本"]
+        ]
+    },
+    "tar": {
+        "action": action(require('./tar')),
+        "command": "tar [env]",
+        "description": "打包当前构建好的文件",
+    },
 };
